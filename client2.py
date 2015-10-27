@@ -6,63 +6,81 @@
 import sys
 import socket
 import select
+import time
+import string
+
+host = 'localhost'
+port = 9999
  
-def chat_client():
-    if(len(sys.argv) < 3) :
-        print 'Usage : python chatclient.py hostname port'
-        sys.exit()
-
-    host = sys.argv[1]
-    port = int(sys.argv[2])
+def client():
      
-    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    s.settimeout(2)
+    # membuat TCP/IP socket
+	x = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
      
-    # connect to remote host
-    print 'anda tersambung, silahkan masuk terlebih dahulu'
-    print 'untuk masuk, silahkan ketikkan login dengan huruf kecil'
-    cin=raw_input()
-    if cin == "login" :
-	sys.stdout.write('ketikkan nama anda '); sys.stdout.flush()
-	cin=raw_input()
-	if cin == '' :
-	   sys.exit()
+    # terhubung dengan remote host
 	try :
-           s.connect((host, port))
+		x.connect((host, port))
 	except :
-           print 'Unable to connect'
-           sys.exit()
-	print 'ketikkan tujuan [nama] [pesan] untuk mengirim pesan kepada orang tertentu'
-	print 'ketikkan semua [pesan] untuk mengirim pesan ke semua pengguna aktif'
-	print 'list untuk melihat pengguna aktif'
-	print 'anda dapat mengirim pesan'
-	sys.stdout.write(cin+" : "); sys.stdout.flush()
-	s.send(cin+" : "+cin)     
-    while 1:
-        socket_list = [sys.stdin, s]
-         
-        # Get the list sockets which are readable
-        ready_to_read,ready_to_write,in_error = select.select(socket_list , [], [])
-         
-        for sock in ready_to_read:             
-            if sock == s:
-                # incoming message from remote server, s
-                data = sock.recv(4096)
-                if not data :
-                    print '\nDisconnected from chat server'
-                    sys.exit()
-                else :
-                    #print data
-                    sys.stdout.write(data)
-                    sys.stdout.write(cin+" : "); sys.stdout.flush()     
-            
-            else :
-                # user entered a message
-                msg = sys.stdin.readline()
-		msg = cin+ " : "+msg
-                s.send(msg)
-                sys.stdout.write(cin+" : "); sys.stdout.flush() 
+		print 'Klien gagal terhubung'
+		sys.exit()
+     
+	print 'Klien sudah terhubung. Silahkan mengobrol :)'
+	sys.stdout.write(' '); sys.stdout.flush()
+     
+	while True:
+		socket_list = [sys.stdin, x]
+		 
+		# Get the list sockets which are readable
+		ready_to_read,ready_to_write,in_error = select.select(socket_list, [], [])
+		 
+		for sock in ready_to_read:      
+		
+			if sock == x:
+				# incoming message from remote server, x
+				data = sock.recv(4096)
+				if not data :
+					print '\nDisconnected from chat server'
+					sys.exit()
+				else :
+					sys.stdout.write(data)
+					sys.stdout.write(' '); sys.stdout.flush()     
+			
+			else :
+				# user memasukkan pesan
+				msg = []
+				temp = sys.stdin.readline()
+				temp1 = string.split(temp[:-1])
+				
+				d=len(temp1)
+				if temp1[0]=="login" :
+					if d>2:
+						print('Username salah')
+					elif d<2:
+						print('Login memerlukan username')
+					else:
+						x.send(temp)
+				
+				elif temp1[0]=="list" :
+					if d>1:
+						print('Perintah salah')
+					else:
+						x.send(temp)
 
-if __name__ == "__main__":
+				elif temp1[0]=="sendto" :
+					if d<3:
+						print('Perintah salah')
+					else:
+						x.send(temp)
+						
+				elif temp1[0]=="sendtoall" :
+					if d<2:
+						print('Perintah salah')
+					else:
+						x.send(temp)
+						
+				else:
+					print ('Perintah salah')
 
-    sys.exit(chat_client())
+				sys.stdout.write(' '); sys.stdout.flush() 
+
+client()
