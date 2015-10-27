@@ -56,7 +56,7 @@ def chat_server():
 			MAPPING[cmd[0]]=sockfd
 			global DECODE
 			DECODE[sockfd]=cmd[0]
-			if cmd[2] =="tujuan" :
+			if cmd[2] =="menuju" :
 				send_to(cmd[3],cmd)
 			elif cmd[2] =="list" :
 				userlist(sock,server_socket)		              
@@ -128,20 +128,8 @@ def broadcast (server_socket, sock, message):
                 socket.close()
                 # broken socket, remove it
                 if socket in SOCKET_LIST:
-                    SOCKET_LIST.remove(socket)
-def broadcast1():
-	#test
-	print ""
-def userlist(sock,server_socket):
-	for socket in SOCKET_LIST :
-		if sock != socket and server_socket!=socket:
-			try:
-				sock.send("\n"+DECODE[socket]+"is online\n")
-			exept :
-				sock.close()
-				if sock in SOCKET_LIST:
-					SOCKET_LIST.remove(socket)
-def send-to(destination,message):
+
+def send_to(destination,message):
 	data = "\n"+message[0] + " : "
 	count = 0
 	while count!=len(message):
